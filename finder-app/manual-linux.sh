@@ -101,6 +101,7 @@ cp -L ${SOURCE_LIB_DIR}/libm.so.6 ${DEST_LIB_DIR}/libm.so.6
 cp -L ${SOURCE_LIB_DIR}/libresolv.so.2 ${DEST_LIB_DIR}/libresolv.so.2
 cp -L ${SOURCE_LIB_DIR}/libc.so.6 ${DEST_LIB_DIR}/libc.so.6
 
+
 # TODO: Make device nodes
 sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
 sudo mknod -m 666 ${OUTDIR}/rootfs/dev/console c 5 1
