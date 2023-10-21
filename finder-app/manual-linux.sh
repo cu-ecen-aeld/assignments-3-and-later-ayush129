@@ -95,19 +95,12 @@ DEST_PROGRAM_INTER="${OUTDIR}/rootfs/lib/ld-linux-aarch64.so.1"
 SOURCE_LIB_DIR="$SYSROOT/lib64"
 DEST_LIB_DIR="${OUTDIR}/rootfs/lib64"
 
+
 TOOLCHAIN_DIR=$(aarch64-none-linux-gnu-gcc -print-sysroot)
 find ${TOOLCHAIN_DIR} -name ld-linux-aarch64.so.1 -exec cp {} ./lib/ \;
 find ${TOOLCHAIN_DIR} -name libm.so.6 -exec cp {} ./lib64/ \;
 find ${TOOLCHAIN_DIR} -name libresolv.so.2 -exec cp {} ./lib64/ \;
 find ${TOOLCHAIN_DIR} -name libc.so.6 -exec cp {} ./lib64/ \;
-
-<< comment
-cp -L ${SOURCE_PROGRAM_INTER} ${DEST_PROGRAM_INTER}
-cp -L ${SOURCE_LIB_DIR}/libm.so.6 ${DEST_LIB_DIR}/libm.so.6 
-cp -L ${SOURCE_LIB_DIR}/libresolv.so.2 ${DEST_LIB_DIR}/libresolv.so.2
-cp -L ${SOURCE_LIB_DIR}/libc.so.6 ${DEST_LIB_DIR}/libc.so.6
-'''
-comment
 
 
 
