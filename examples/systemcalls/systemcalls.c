@@ -1,4 +1,10 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include "stdbool.h"
+#include "fcntl.h"
 
 /**
  * @param cmd the command to execute with system()
@@ -16,8 +22,37 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
+    if (cmd != NULL)
+    {
+        int status = system(cmd);
 
-    return true;
+        if (status == -1)
+        {
+            return false;
+        }
+        else {
+            if (WIFEXITED(status)) 
+            {
+                int exit_status = WEXITSTATUS(status);
+                if (exit_status == 0) 
+                {
+                    printf("Command executed successfully.\n");
+                    return true;
+                } else 
+                {
+                    printf("Command exited with error code: %d\n", exit_status);
+                    return false;
+                }
+            } 
+            else 
+            {
+                printf("Command terminated abnormally.\n");
+                return false;
+            }}
+    }
+
+    return false;
+
 }
 
 /**
@@ -45,10 +80,12 @@ bool do_exec(int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
 
+    // checking if command is absolute path or not
+    if (command[0][0]!='/')
+    {
+        return false;
+    }
 /*
  * TODO:
  *   Execute a system command by calling fork, execv(),
@@ -59,9 +96,32 @@ bool do_exec(int count, ...)
  *
 */
 
+    pid_t pid =fork();
+
+    if (pid < 0){
+        printf("child process cant be created");
+        return false;
+    }
+    if(pid==0)//child process
+    {
+        execv(command[0],command);
+        // process should not return from here
+        return false;
+    }
+
+    int status;
+    waitpid(pid,&status,0);
     va_end(args);
 
-    return true;
+    if(WIFEXITED(status))
+    {
+        if(WEXITSTATUS(status))
+        {return false;}
+        else return true;
+    }
+
+    return false;
+
 }
 
 /**
@@ -80,11 +140,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
-
-
 /*
  * TODO
  *   Call execv, but first using https://stackoverflow.com/a/13784315/1446624 as a refernce,
@@ -92,6 +147,44 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+    pid_t pid =fork();
+
+    if (pid < 0){
+        printf("child process cant be created");
+        return false;
+    }
+    if(pid==0)//child process
+    {
+        // Open the output file
+        int fd = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) {
+            fprintf(stderr, "Failed to open output file\n");
+            return false;
+        }
+
+        // Redirect stdout to the output file
+        // dup2 function copies the file descriptor and closed the second descriptoe
+        if (dup2(fd, STDOUT_FILENO) < 0) {
+            fprintf(stderr, "Failed to redirect stdout\n");
+            return false;
+        }
+
+        // Close the file descriptor
+        close(fd);
+
+        execv(command[0],command);
+        // process should not return from here
+        return false;
+    }
+
+    int status;
+    waitpid(pid,&status,0);
+
+    if(WIFEXITED(status))
+    {
+        printf("child process excited with status %d\n",status);
+        return false;
+    }
 
     va_end(args);
 
