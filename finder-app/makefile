@@ -1,10 +1,12 @@
-COMPILER_CALL=gcc writer.c -o writer
-CROSS_COMPILE?=
-COMPILER_FCALL=$(CROSS_COMPILE)$(COMPILER_CALL)
-all: default
-default:
-	$(COMPILER_FCALL)
+ifdef CROSS_COMPILE
+CC = $(CROSS_COMPILE)gcc
+else
+CC = gcc
+endif
 
+all: writer.c
+	$(CC) writer.c -o writer
+
+.PHONY: clean
 clean:
 	rm -f writer
-	rm -f *.o
